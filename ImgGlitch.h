@@ -38,10 +38,13 @@ public:
 	 * Specify the input image to be messed with.
 	 * 	
 	 * @param apFilename The name of the image file to open.
+	 * @param abClear If true wipe the output raster to 0. If false
+	 *	either allocate memory for palette and don't clear it or if
+	 *	palette is open from before leave it unmolested.
 	 *	
 	 * @return 0 on success.
 	 */
-	int openImgIn(char* apFilename);
+	int openImgIn(const char* apFilename, bool abClear);
 
 	/**
 	 * Specify and write the raster data to the output file.	
@@ -51,7 +54,7 @@ public:
 	 *
 	 * @return 0 on sucess.
 	 */
-	int writeImgOut(char* apFilename);
+	int writeImgOut(const char* apFilename);
 
 	/**
 	 * Pull a chunk of data from the input image for processing.
@@ -80,6 +83,8 @@ public:
 	 */
 	int flipChunk(bool abHoriz, bool abVert);
 
+	// Can merge with file
+	// Create mini-chunks and randomly scrabble them
 	int corruptChunk();
 
 	/**

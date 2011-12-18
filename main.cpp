@@ -11,6 +11,10 @@
 
 int main(int argc, char* argv[])
 {
+	tcImgGlitch lcGlitch;
+
+	lcGlitch.openImgIn("test.tiff", true);
+	lcGlitch.writeImgOut("poo.tiff");
 	return 0;
 }
 
