@@ -31,11 +31,11 @@ tcImgGlitch::tcImgGlitch()
 tcImgGlitch::~tcImgGlitch()
 {
 	if (NULL != mpRasterIn)
-		delete mpRasterIn;
+		_TIFFfree(mpRasterIn);
 	if (NULL != mpRasterChunk)
-		delete mpRasterChunk;
+		delete [] mpRasterChunk;
 	if (NULL != mpRasterOut)
-		delete mpRasterOut;
+		_TIFFfree(mpRasterOut);
 }
 
 /**
@@ -209,7 +209,53 @@ int
 tcImgGlitch::pullChunk(uint32_t anX, uint32_t anY, uint32_t anWidth, 
 	uint32_t anHeight, bool abCut)
 {
-	return -1;
+	uint32_t* lpImgData = mpRasterIn;
+	uint32_t* lpChunkData = NULL;
+
+	// Check input arguments
+	if (anX >= msImgDetailsIn.width)
+		return -1;
+	if (anY >= msImgDetailsIn.height)
+		return -1;
+	if (anX + anWidth >= msImgDetailsIn.width)
+		return -1;
+	if (anY + anHeight >= msImgDetailsIn.height)
+		return -1; 
+
+	// Delete old chunk if we've got it
+	if (NULL != mpRasterChunk)
+		delete mpRasterChunk;
+
+	// Allocate space for the chunk data
+	mpRasterChunk = new uint32_t[anWidth * anHeight];
+	lpChunkData = mpRasterChunk;
+
+	// Clear the chunk in case it's too large
+	memset(mpRasterChunk, 0, sizeof(uint32_t) * anWidth * anHeight);
+
+	// Mark original location and size of chunk
+	mnChunkX = anX;
+	mnChunkY = anY;
+	mnChunkWidth = anWidth;
+	mnChunkHeight = anHeight; 
+
+	// Adjust for x offset
+	lpImgData += anX;
+	// Copy/cut in chunk data
+	for (uint32_t row = 0; row < anHeight; row++)
+	{
+		// Copy row data
+		memcpy(lpChunkData, lpImgData, sizeof(uint32_t)*anWidth);
+		// Clear row if this was a cut
+		if (abCut)
+			memset(lpImgData, 0, sizeof(uint32_t)*anWidth);
+		// Advance to next row of image data
+		lpImgData += msImgDetailsIn.width;	
+		// Advance to next row of chunk data
+		lpChunkData += anWidth;
+	}
+	
+	return 0;
 }
 
 /**
@@ -223,12 +269,20 @@ tcImgGlitch::pullChunk(uint32_t anX, uint32_t anY, uint32_t anWidth,
 int 
 tcImgGlitch::flipChunk(bool abHoriz, bool abVert)
 {
+	// Make sure we have a valid chunk
+	if (NULL == mpRasterChunk)
+		return -1;
+
 	return -1;
 }
 
 int 
 tcImgGlitch::corruptChunk()
 {
+	// Make sure we have a valid chunk
+	if (NULL == mpRasterChunk)
+		return -1;
+
 	return -1;
 }
 
@@ -247,6 +301,10 @@ int
 tcImgGlitch::pastChunk(uint32_t anTransX, uint32_t anTransY, 
 	teCombMethod aeCombMethod)
 {
+	// Make sure we have a valid chunk
+	if (NULL == mpRasterChunk)
+		return -1;
+
 	return -1;
 }
 

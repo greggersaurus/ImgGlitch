@@ -120,3 +120,4 @@ private:
 };
 
 #endif /* _IMG_GLITCH_ */
+
