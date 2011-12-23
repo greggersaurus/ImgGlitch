@@ -22,7 +22,6 @@ tcImgGlitch::tcImgGlitch()
 , mnChunkHeight(0)
 , mpRasterOut(NULL)
 {
-
 }
 
 /**
@@ -30,6 +29,7 @@ tcImgGlitch::tcImgGlitch()
  */
 tcImgGlitch::~tcImgGlitch()
 {
+	// Clean up any raster data we may have allocated
 	if (NULL != mpRasterIn)
 		_TIFFfree(mpRasterIn);
 	if (NULL != mpRasterChunk)
@@ -133,11 +133,6 @@ tcImgGlitch::openImgIn(const char* apFilename, bool abClear)
 int 
 tcImgGlitch::writeImgOut(const char* apFilename)
 {
-//TODO: Begin Debug to be removed
-	memcpy(mpRasterOut, mpRasterIn, msImgDetailsOut.width
-		* msImgDetailsOut.height * sizeof(uint32_t));
-//TODO: End Debug
-
 	// Open output file
 	TIFF* lpTiffOut = NULL;	
 	uint32_t lnLineBytes = 0;
@@ -217,42 +212,48 @@ tcImgGlitch::pullChunk(uint32_t anX, uint32_t anY, uint32_t anWidth,
 		return -1;
 	if (anY >= msImgDetailsIn.height)
 		return -1;
-	if (anX + anWidth >= msImgDetailsIn.width)
+
+	// Make sure we have an image opened
+	if (NULL == mpRasterIn)
 		return -1;
-	if (anY + anHeight >= msImgDetailsIn.height)
-		return -1; 
 
 	// Delete old chunk if we've got it
 	if (NULL != mpRasterChunk)
 		delete mpRasterChunk;
 
-	// Allocate space for the chunk data
-	mpRasterChunk = new uint32_t[anWidth * anHeight];
-	lpChunkData = mpRasterChunk;
-
-	// Clear the chunk in case it's too large
-	memset(mpRasterChunk, 0, sizeof(uint32_t) * anWidth * anHeight);
-
 	// Mark original location and size of chunk
 	mnChunkX = anX;
 	mnChunkY = anY;
 	mnChunkWidth = anWidth;
+	if (anX + anWidth >= msImgDetailsIn.width)
+		mnChunkWidth -= (anX + anWidth) - msImgDetailsIn.width ;
 	mnChunkHeight = anHeight; 
+	if (anY + anHeight >= msImgDetailsIn.height)
+		mnChunkHeight -= (anY + anHeight) - msImgDetailsIn.height ;
+
+	// Allocate space for the chunk data
+	mpRasterChunk = new uint32_t[mnChunkWidth * mnChunkHeight];
+	// Set local pointer for ease of access
+	lpChunkData = mpRasterChunk;
+
+	// Clear the chunk in case it's too large
+	memset(mpRasterChunk, 0, sizeof(uint32_t) * mnChunkWidth 
+		* mnChunkHeight);
 
 	// Adjust for x offset
 	lpImgData += anX;
 	// Copy/cut in chunk data
-	for (uint32_t row = 0; row < anHeight; row++)
+	for (uint32_t row = 0; row < mnChunkHeight; row++)
 	{
 		// Copy row data
-		memcpy(lpChunkData, lpImgData, sizeof(uint32_t)*anWidth);
+		memcpy(lpChunkData, lpImgData, sizeof(uint32_t)*mnChunkWidth);
 		// Clear row if this was a cut
 		if (abCut)
-			memset(lpImgData, 0, sizeof(uint32_t)*anWidth);
+			memset(lpImgData, 0, sizeof(uint32_t)*mnChunkWidth);
 		// Advance to next row of image data
 		lpImgData += msImgDetailsIn.width;	
 		// Advance to next row of chunk data
-		lpChunkData += anWidth;
+		lpChunkData += mnChunkWidth;
 	}
 	
 	return 0;
@@ -269,7 +270,7 @@ tcImgGlitch::pullChunk(uint32_t anX, uint32_t anY, uint32_t anWidth,
 int 
 tcImgGlitch::flipChunk(bool abHoriz, bool abVert)
 {
-	// Make sure we have a valid chunk
+	// Make sure we have a valid chunk in memory
 	if (NULL == mpRasterChunk)
 		return -1;
 
@@ -279,7 +280,7 @@ tcImgGlitch::flipChunk(bool abHoriz, bool abVert)
 int 
 tcImgGlitch::corruptChunk()
 {
-	// Make sure we have a valid chunk
+	// Make sure we have a valid chunk in memory
 	if (NULL == mpRasterChunk)
 		return -1;
 
@@ -301,10 +302,47 @@ int
 tcImgGlitch::pastChunk(uint32_t anTransX, uint32_t anTransY, 
 	teCombMethod aeCombMethod)
 {
-	// Make sure we have a valid chunk
+	// Number of pixels to paste per row in case less than chunk width
+	uint32_t lnPasteWidth = mnChunkWidth;
+	// Number of rows to paste in case less than chunk height
+	uint32_t lnPasteHeight = mnChunkHeight;
+	uint32_t* lpImgData = mpRasterOut;
+	uint32_t* lpChunkData = mpRasterChunk;
+
+	// Make sure we have a valid chunk in memory
 	if (NULL == mpRasterChunk)
 		return -1;
 
-	return -1;
+	// Make sure an output image is open
+	if (NULL == mpRasterChunk)
+		return -1;
+
+	// Readjust paste width if chunk runs outside of output image
+	if (anTransX + mnChunkX + mnChunkWidth >= msImgDetailsOut.width)
+	{
+		lnPasteWidth -=  (anTransX + mnChunkX + mnChunkWidth)
+			- msImgDetailsOut.width;
+	}
+
+	// Readjust paste height if chunk runs outside of output image
+	if (anTransY + mnChunkY + mnChunkHeight >= msImgDetailsOut.height)
+	{
+		lnPasteHeight -=  (anTransY + mnChunkY + mnChunkHeight)
+			- msImgDetailsOut.height;
+	}
+
+	lpImgData += anTransX + mnChunkX;
+	// Copy the chunk to the output raster 
+	for (uint32_t row = 0; row < lnPasteHeight; row++)
+	{
+		// Copy over a row
+		memcpy(lpImgData, lpChunkData, sizeof(uint32_t)*lnPasteWidth);
+		// Increment chunk pointer by a row
+		lpChunkData += mnChunkWidth;
+		// Increment output raster point by a row
+		lpImgData += msImgDetailsOut.width;
+	}
+
+	return 0;
 }
 
