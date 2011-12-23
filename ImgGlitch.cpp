@@ -299,7 +299,7 @@ tcImgGlitch::corruptChunk()
  * @return 0 on sucess.
  */
 int 
-tcImgGlitch::pastChunk(uint32_t anTransX, uint32_t anTransY, 
+tcImgGlitch::pasteChunk(uint32_t anTransX, uint32_t anTransY, 
 	teCombMethod aeCombMethod)
 {
 	// Number of pixels to paste per row in case less than chunk width
@@ -336,7 +336,7 @@ tcImgGlitch::pastChunk(uint32_t anTransX, uint32_t anTransY,
 	for (uint32_t row = 0; row < lnPasteHeight; row++)
 	{
 		// Copy over a row
-		memcpy(lpImgData, lpChunkData, sizeof(uint32_t)*lnPasteWidth);
+		pasteRow(lpImgData, lpChunkData, lnPasteWidth, aeCombMethod);
 		// Increment chunk pointer by a row
 		lpChunkData += mnChunkWidth;
 		// Increment output raster point by a row
@@ -344,5 +344,40 @@ tcImgGlitch::pastChunk(uint32_t anTransX, uint32_t anTransY,
 	}
 
 	return 0;
+}
+
+/**
+ * Take the given row of data and paste is using the specified 
+ * combination method.
+ *
+ * @param apDest Pointer to desitation.
+ * @param apSource Pointer to source data.
+ * @param anNumPixels Number of pixels to copy. 
+ * @param aeCombMethod Combine method.
+ *
+ * @return None.
+ */
+void 
+tcImgGlitch::pasteRow(uint32_t* apDest, uint32_t* apSource,
+	uint32_t anNumPixels, teCombMethod aeCombMethod)
+{
+	switch (aeCombMethod)
+	{
+	case eeOr:
+		for (uint32_t cnt=0; cnt < anNumPixels; cnt++)
+			apDest[cnt] |= apSource[cnt];
+		break;
+	case eeXor:
+		for (uint32_t cnt=0; cnt < anNumPixels; cnt++)
+			apDest[cnt] ^= apSource[cnt];
+		break;
+	case eeAnd:
+		for (uint32_t cnt=0; cnt < anNumPixels; cnt++)
+			apDest[cnt] &= apSource[cnt];
+		break;
+	case eeOverwrite:
+		memcpy(apDest, apSource, sizeof(uint32_t)*anNumPixels);
+		break;
+	}
 }
 

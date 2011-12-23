@@ -98,10 +98,24 @@ public:
 	 *
 	 * @return 0 on sucess.
 	 */
-	int pastChunk(uint32_t anTransX, uint32_t anTransY, 
+	int pasteChunk(uint32_t anTransX, uint32_t anTransY, 
 		teCombMethod aeCombMethod);
 
 private:
+
+	/**
+	 * Take the given row of data and paste is using the specified 
+	 * combination method.
+	 *
+	 * @param apDest Pointer to desitation.
+	 * @param apSource Pointer to source data.
+	 * @param anNumPixels Number of pixels to copy. 
+	 * @param aeCombMethod Combine method.
+	 *
+	 * @return None.
+	 */
+	void pasteRow(uint32_t* apDest, uint32_t* apSource, 
+		uint32_t anNumPixels, teCombMethod aeCombMethod);
 
 	TIFFRGBAImage msImgDetailsIn; //!< Details of input image.
 	uint32_t* mpRasterIn; //!< Raster data for input image.
