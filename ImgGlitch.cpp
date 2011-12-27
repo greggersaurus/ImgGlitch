@@ -193,8 +193,10 @@ tcImgGlitch::writeImgOut(const char* apFilename)
  * 	image chunk to process.
  * @param anY The Y pixel location of hte bottom left corner of the 
  * 	image chunk to process.
- * @param anWidth The width, in pixels, of the chunk to process.
- * @param anHeight The height, in pixels of hte chunk to process.
+ * @param anWidth The width, in pixels, of the chunk to process. Set to
+ * 	max size to grab entire input image.
+ * @param anHeight The height, in pixels of hte chunk to process. Set to
+ * 	max size to grab entire input image
  * @param abCut Set to true if you want the chunk to be removed
  * 	from the original image as opposed to just being copied.
  * 
@@ -270,11 +272,63 @@ tcImgGlitch::pullChunk(uint32_t anX, uint32_t anY, uint32_t anWidth,
 int 
 tcImgGlitch::flipChunk(bool abHoriz, bool abVert)
 {
+	uint32_t* lpRasterOld = mpRasterChunk;
+	uint32_t* lpOldChunk = mpRasterChunk;
+	uint32_t* lpNewChunk = NULL;
+	// The number of pixels to jump when proceeding to the next row
+	int32_t lnRowOffset = mnChunkWidth;
+
 	// Make sure we have a valid chunk in memory
 	if (NULL == mpRasterChunk)
 		return -1;
 
-	return -1;
+	// Assume it's not a mistake if we've been told to do nothing
+	if (false == abHoriz && false == abVert)
+		return 0;
+
+	// Create new chunk to store flipped data
+	mpRasterChunk = new uint32_t[mnChunkWidth * mnChunkHeight];
+	lpNewChunk = mpRasterChunk;
+
+	// Make sure we had enough heap space for another chunk
+	if (NULL == mpRasterChunk)
+		return -1;
+
+	// If vertical flip we work backwards from bottom to top
+	if (abVert)
+	{
+		// Work backwards from bottom of old data to top
+		lnRowOffset = -lnRowOffset;
+		// Start at last row in new chunk data
+		lpOldChunk += mnChunkWidth * (mnChunkHeight-1);
+	}
+
+	// Loop for row-wise copying
+	for (uint32_t row = 0; row < mnChunkHeight; row++)
+	{
+		// Copy the row data
+		if (abHoriz)
+		{
+			// Copy row backwards if flipped horizontally
+			for (uint32_t col=0; col < mnChunkWidth; col++)
+				lpNewChunk[col] = 
+					lpOldChunk[mnChunkWidth-col-1];
+		}
+		else
+		{
+			memcpy(lpNewChunk, lpOldChunk, sizeof(uint32_t)
+				* mnChunkWidth);
+		}
+
+		// Increment the image data pointers
+		lpOldChunk += lnRowOffset;
+		lpNewChunk += mnChunkWidth;	
+	}
+
+	// Delete the old chunk
+	delete [] lpRasterOld;
+
+	return 0;
 }
 
 int 

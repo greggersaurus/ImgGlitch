@@ -14,9 +14,10 @@ int main(int argc, char* argv[])
 	tcImgGlitch lcGlitch;
 
 	lcGlitch.openImgIn("test.tiff", true);
-	lcGlitch.pullChunk(0, 0, 100, 100, false);
+	lcGlitch.pullChunk(0, 0, 0xfffffff, 0xfffffff, false);
+	lcGlitch.flipChunk(true, true);
 	lcGlitch.pasteChunk(0, 0, tcImgGlitch::eeOverwrite);
-	lcGlitch.pasteChunk(50, 0, tcImgGlitch::eeOr);
+//	lcGlitch.pasteChunk(50, 0, tcImgGlitch::eeOr);
 	lcGlitch.writeImgOut("poo.tiff");
 	return 0;
 }

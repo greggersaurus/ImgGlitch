@@ -63,8 +63,10 @@ public:
 	 * 	image chunk to process.
 	 * @param anY The Y pixel location of the bottom left corner of the 
 	 * 	image chunk to process.
-	 * @param anWidth The width, in pixels, of the chunk to process.
-	 * @param anHeight The height, in pixels of hte chunk to process.
+	 * @param anWidth The width, in pixels, of the chunk to process. Set to
+	 * 	max size to grab entire input image.
+	 * @param anHeight The height, in pixels of hte chunk to process. Set to
+	 * 	max size to grab entire input image
 	 * @param abCut Set to true if you want the chunk to be removed
 	 * 	from the original image as opposed to just being copied.
 	 * 
