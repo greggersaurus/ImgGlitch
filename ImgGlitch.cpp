@@ -189,9 +189,9 @@ tcImgGlitch::writeImgOut(const char* apFilename)
 /**
  * Pull a chunk of data from the input image for processing.
  *
- * @param anX The X pixel location of the upper left corner of the
+ * @param anX The X pixel location of the bottom left corner of the
  * 	image chunk to process.
- * @param anY The Y pixel location of hte upper left corner of the 
+ * @param anY The Y pixel location of hte bottom left corner of the 
  * 	image chunk to process.
  * @param anWidth The width, in pixels, of the chunk to process.
  * @param anHeight The height, in pixels of hte chunk to process.

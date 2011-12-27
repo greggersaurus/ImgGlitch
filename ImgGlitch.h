@@ -59,9 +59,9 @@ public:
 	/**
 	 * Pull a chunk of data from the input image for processing.
 	 *
-	 * @param anX The X pixel location of the upper left corner of the
+	 * @param anX The X pixel location of the bottom left corner of the
 	 * 	image chunk to process.
-	 * @param anY The Y pixel location of hte upper left corner of the 
+	 * @param anY The Y pixel location of the bottom left corner of the 
 	 * 	image chunk to process.
 	 * @param anWidth The width, in pixels, of the chunk to process.
 	 * @param anHeight The height, in pixels of hte chunk to process.
@@ -122,9 +122,9 @@ private:
 
 	uint32_t* mpRasterChunk; //!< Current chunk of image currently
 		//!< being processed.
-	uint32_t mnChunkX; //!< X pixel location of upper left corner of where
+	uint32_t mnChunkX; //!< X pixel location of bottom left corner of where
 		//!< chunk was taken from image.
-	uint32_t mnChunkY; //!< Y pixel location of upper left corner of where
+	uint32_t mnChunkY; //!< Y pixel location of bottom left corner of where
 		//!< chunk was taken from image.
 	uint32_t mnChunkWidth; //!< Width of chunk in pixels.
 	uint32_t mnChunkHeight; //!< Height of chunk in pixels.
