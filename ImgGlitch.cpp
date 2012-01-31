@@ -429,6 +429,13 @@ tcImgGlitch::pasteRow(uint32_t* apDest, uint32_t* apSource,
 		for (uint32_t cnt=0; cnt < anNumPixels; cnt++)
 			apDest[cnt] &= apSource[cnt];
 		break;
+	case eeAvg:
+		for (uint32_t cnt=0; cnt < anNumPixels; cnt++)
+		{
+			apDest[cnt] = ((apDest[cnt]>>1)&0xFF7F7F7F)
+				+ ((apSource[cnt]>>1)&0xFF7F7F7F);
+		}
+		break;
 	case eeOverwrite:
 		memcpy(apDest, apSource, sizeof(uint32_t)*anNumPixels);
 		break;

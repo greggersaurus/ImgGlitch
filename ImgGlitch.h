@@ -21,6 +21,7 @@ public:
 		eeOr, //!< Bitwise OR new and old data
 		eeXor, //!< Bitwise XOR new and old data
 		eeAnd, //!< Bitwise AND new and old data
+		eeAvg, //!< Average the two pixels
 		eeOverwrite, //!< New data overwrites any old data
 	};
 
