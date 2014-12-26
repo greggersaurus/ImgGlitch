@@ -1,13 +1,29 @@
+# Set the compiler being used.
+CC = g++
 
-CC=g++
-CFLAGS=-Wall
-SOURCES=	main.cpp \
-		ImgGlitch.h \
-		ImgGlitch.cpp 
-LIBS=-ltiff
+# Includes needed for proper compilation
+INCLUDES =
+# Libraries needed for linking
+LDFLAGS = -ltiff
 
-all: 
-	${CC} ${CFLAGS} ${LIBS} ${SOURCES} -o ImgGlitch
+# Set Compiler Flags
+CFLAGS =-g -c -Wall $(INCLUDES) -std=gnu++0x
+
+# List of source to be compiled
+SOURCES = main.cpp \
+	  ImgGlitch.cpp
+
+OBJECTS = $(SOURCES:.cpp=.o)
+	EXECUTABLE = ImgGlitch
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	 $(CC)  $(OBJECTS) -o $@ $(LDFLAGS)
+
+.cpp.o:
+	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o ImgGlitch
+	rm -rf $(OBJECTS) $(EXECUTABLE)
+
